@@ -47,11 +47,11 @@ public class MainActivity extends Activity {
     
     public void makeInstagramView() throws Exception {
         final InstagramAuthentication auth = new InstagramAuthentication();
-        auth.setClientId("a1dbb86cf84d4eabbc80b4e43e2aa1ac");
-        auth.setClientSecret("c38046f2f8ff49a8b646717305a6efd0");
+        auth.setClientId("");
+        auth.setClientSecret("");
         auth.setRedirectUri("http://localhost");
 
-        final AccessToken token = new AccessToken("222186701.a1dbb86.a695fe190bd44ed1ac4ef62608ba5b38");
+        final AccessToken token = new AccessToken("");
         auth.setScope("comments");
 
         final InstagramSession session = new InstagramSession(token);
