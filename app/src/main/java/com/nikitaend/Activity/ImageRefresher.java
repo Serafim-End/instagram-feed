@@ -12,6 +12,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.nikitaend.instafeed.View.HorizontalListView;
 import com.nikitaend.instafeed.Volley.MyVolley;
 import com.nikitaend.instafeed.sola.instagram.InstagramSession;
 import com.nikitaend.instafeed.sola.instagram.io.UriFactory;
@@ -35,11 +36,14 @@ public class ImageRefresher {
     private String currentMaxID = null;
     private InstagramSession session;
     private ArrayList<Holder> imagesUrlArray;
+    private HorizontalListView horizontalListView;
+ 
     private ArrayAdapter picassoAdapterFeed;
     private ListView listView;
     private Activity thatCalled;
     public String uri_count = null;
     private boolean mInError = false;
+    private ArrayList<String> imagesUrlString;
     
     public ImageRefresher(InstagramSession session, ArrayList<Holder> imagesUrlArray,
                           ArrayAdapter picassoAdapterFeed, ListView listView,
@@ -53,6 +57,17 @@ public class ImageRefresher {
         this.mInError = inError;
         
         this.listView.setOnScrollListener(new EndlessScrollListener());
+    }
+    
+    public ImageRefresher(InstagramSession session,
+                          ArrayAdapter picassoAdapter,
+                          Activity thatCalled,
+                          ArrayList<String> imagesUrl) {
+        
+        this.session = session;
+        this.picassoAdapterFeed = picassoAdapter;
+        this.thatCalled = thatCalled;
+        this.imagesUrlString = imagesUrl;
     }
     
     
@@ -83,6 +98,50 @@ public class ImageRefresher {
                 createMyReqSuccessListener(),
                 createMyReqErrorListener());
         queue.add(request);
+    }
+    
+    public void loadPage(int count) {
+        RequestQueue queue = MyVolley.getRequestQueue();
+        
+        String tagName = TAG.replaceAll("#*", "");
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("tag_name", tagName);
+        
+        String uri = session.uriConstructor.constructUri(
+                UriFactory.Tags.GET_RECENT_TAGED_MEDIA, map, true) 
+                + "&&count=" + count;
+        
+        
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET,
+                uri,
+                (JSONObject) null,
+                createMyReqSuccessListenerPreview(),
+                createMyReqErrorListener());
+        queue.add(request);
+        
+    }
+    
+    private Response.Listener<JSONObject> createMyReqSuccessListenerPreview() {
+        return new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject object) {
+                JSONArray media = object.optJSONArray("data");
+
+                try {
+                    for (int i = 0; i < media.length(); i++) {
+                        Media mediaI = 
+                                Media.fromJSON(media.getJSONObject(i), session.getAccessToken());
+                        // imagesUrlString.add(mediaI.getThumbnailImage().getUri());
+                        picassoAdapterFeed.add(mediaI.getThumbnailImage().getUri());
+                    }
+                    //picassoAdapterFeed.notifyDataSetChanged();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        
     }
     
     

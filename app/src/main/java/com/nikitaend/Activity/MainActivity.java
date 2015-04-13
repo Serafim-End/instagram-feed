@@ -11,6 +11,7 @@ import com.nikitaend.instafeed.Adapter.PicassoAdapter;
 import com.nikitaend.instafeed.R;
 import com.nikitaend.instafeed.View.CircleButton;
 import com.nikitaend.instafeed.View.HorizontalListView;
+import com.nikitaend.instafeed.Volley.MyVolley;
 import com.nikitaend.instafeed.sola.instagram.InstagramSession;
 import com.nikitaend.instafeed.sola.instagram.auth.AccessToken;
 import com.nikitaend.instafeed.sola.instagram.auth.InstagramAuthentication;
@@ -47,23 +48,26 @@ public class MainActivity extends Activity {
     
     public void makeInstagramView() throws Exception {
         final InstagramAuthentication auth = new InstagramAuthentication();
-        auth.setClientId("");
-        auth.setClientSecret("");
+        auth.setClientId("a1dbb86cf84d4eabbc80b4e43e2aa1ac");
+        auth.setClientSecret("c38046f2f8ff49a8b646717305a6efd0");
         auth.setRedirectUri("http://localhost");
 
-        final AccessToken token = new AccessToken("");
+        final AccessToken token = new AccessToken("222186701.a1dbb86.a695fe190bd44ed1ac4ef62608ba5b38");
         auth.setScope("comments");
 
         final InstagramSession session = new InstagramSession(token);
+        MyVolley.init(getApplicationContext());
 
         final HorizontalListView horizontalListView;
         horizontalListView = (HorizontalListView) findViewById(R.id.HorizontalListView);
         mAdapter = new PicassoAdapter(getApplicationContext(),
-                R.layout.item_preview, imagesUrlArray);
+                R.layout.item_preview, imagesUrlArray, MyVolley.getImageLoader());
         horizontalListView.setAdapter(mAdapter);
         
-        getRecentMediaForTag(session, "home", 6);
-
+        // getRecentMediaForTag(session, "home", 6);
+        ImageRefresher imageRefresher = 
+                new ImageRefresher(session, mAdapter, MainActivity.this, imagesUrlArray);
+        imageRefresher.loadPage(6);
         
         CircleButton circleButton = (CircleButton) findViewById(R.id.circle_button);
         circleButton.bringToFront();
@@ -85,8 +89,7 @@ public class MainActivity extends Activity {
     public void getRecentMediaForTag(final InstagramSession instagramSession,
                                                            String tagName, int count) throws Exception {
 
-        
-        
+
         tagName = tagName.replaceAll("^#*", "");
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("tag_name", tagName);
