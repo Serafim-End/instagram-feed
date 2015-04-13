@@ -16,15 +16,8 @@ import com.nikitaend.instafeed.sola.instagram.InstagramSession;
 import com.nikitaend.instafeed.sola.instagram.auth.AccessToken;
 import com.nikitaend.instafeed.sola.instagram.auth.InstagramAuthentication;
 import com.nikitaend.instafeed.sola.instagram.exception.InstagramException;
-import com.nikitaend.instafeed.sola.instagram.io.UriFactory;
-import com.nikitaend.instafeed.sola.instagram.model.Media;
-import com.nikitaend.instafeed.sola.instagram.util.PaginationIterator;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
 public class MainActivity extends Activity {
@@ -47,12 +40,13 @@ public class MainActivity extends Activity {
     }
     
     public void makeInstagramView() throws Exception {
+        
         final InstagramAuthentication auth = new InstagramAuthentication();
-        auth.setClientId("a1dbb86cf84d4eabbc80b4e43e2aa1ac");
-        auth.setClientSecret("c38046f2f8ff49a8b646717305a6efd0");
+        auth.setClientId("");
+        auth.setClientSecret("");
         auth.setRedirectUri("http://localhost");
 
-        final AccessToken token = new AccessToken("222186701.a1dbb86.a695fe190bd44ed1ac4ef62608ba5b38");
+        final AccessToken token = new AccessToken("");
         auth.setScope("comments");
 
         final InstagramSession session = new InstagramSession(token);
@@ -64,7 +58,6 @@ public class MainActivity extends Activity {
                 R.layout.item_preview, imagesUrlArray, MyVolley.getImageLoader());
         horizontalListView.setAdapter(mAdapter);
         
-        // getRecentMediaForTag(session, "home", 6);
         ImageRefresher imageRefresher = 
                 new ImageRefresher(session, mAdapter, MainActivity.this, imagesUrlArray);
         imageRefresher.loadPage(6);
@@ -79,35 +72,10 @@ public class MainActivity extends Activity {
 
                 intent.putExtra("auth", auth);
                 intent.putExtra("token", token);
-                // intent.putExtra("search_tag", TAG);
                 
                 startActivity(intent);
             }
         });
-    }
-
-    public void getRecentMediaForTag(final InstagramSession instagramSession,
-                                                           String tagName, int count) throws Exception {
-
-
-        tagName = tagName.replaceAll("^#*", "");
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("tag_name", tagName);
-        String uri = instagramSession.uriConstructor.constructUri(
-                UriFactory.Tags.GET_RECENT_TAGED_MEDIA, map, true) + "&&count=" + count;
-
-        
-        ArrayList<Media> media = new ArrayList<Media>();
-        PaginationIterator<Media> iterator =  new PaginationIterator<Media>(media, uri, count) {
-            @Override
-            public void handleLoad(JSONArray mediaItems) throws JSONException {
-                for (int i = 0; i < mediaItems.length(); i++) {
-                    list.add(Media.fromJSON(mediaItems.getJSONObject(i), 
-                            instagramSession.getAccessToken()));
-                    mAdapter.add(list.get(i).getThumbnailImage().getUri());
-                }
-            }
-        };
     }
     
     private String authenticationCodeUrl(InstagramAuthentication auth) {
